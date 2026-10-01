@@ -1,0 +1,26 @@
+# Виртуальное окружение
+.venv/
+venv/
+ENV/
+
+# Кеш Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Загруженные файлы и динамические данные
+downloads/*
+!downloads/.gitkeep
+chat_history.json
+
+# Локальные конфиги, секреты и переменные окружения
+.env
+.env.local
+*.log
+
+# Файлы операционной системы и IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>botyarawatch</title>
+    <link rel="stylesheet" href="/static/css/themes.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/player.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+</head>
+<body data-theme="catppuccin-mocha" data-accent="green">
+
+    <!-- ============ LOGIN SCREEN ============ -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <div class="login-logo">botyarawatch</div>
+            <div class="login-subtitle" data-i18n="login.subtitle">Watch together</div>
+            <input type="text" id="nickname-input" class="login-input"
+                   data-i18n-placeholder="login.placeholder" placeholder="Enter nickname..."
+                   maxlength="20" autocomplete="off" spellcheck="false">
+            <button id="join-btn" class="login-btn" data-i18n="login.join">Join</button>
+            <div id="login-error" class="login-error"></div>
+        </div>
+    </div>
+
+    <!-- ============ MAIN APP ============ -->
+    <div id="app" class="app hidden">
+
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <span class="header-logo">botyarawatch</span>
+                <span class="header-users" id="header-users"></span>
+            </div>
+            <div class="header-right">
+                <span class="header-leader" id="header-leader"></span>
+                <button class="header-btn settings-btn" id="settings-btn" title="Settings">
+                    <span class="nf nf-cod-settings_gear"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+
+            <!-- LEFT: PLAYER -->
+            <div class="player-section">
+                <div class="player-wrapper" id="player-wrapper">
+                    <video id="video-player" preload="auto" playsinline></video>
+
+                    <!-- Custom Controls -->
+                    <div class="player-controls" id="player-controls">
+                        <div class="progress-bar-container" id="progress-container">
+                            <div class="progress-bar-buffered" id="progress-buffered"></div>
+                            <div class="progress-bar-played" id="progress-played"></div>
+                            <div class="progress-bar-handle" id="progress-handle"></div>
+                            <div class="progress-tooltip" id="progress-tooltip">0:00</div>
+                        </div>
+
+                        <div class="controls-bottom">
+                            <div class="controls-left">
+                                <button class="ctrl-btn" id="btn-rewind" title="-5s" style="display:none;">
+                                    <span class="nf nf-md-rewind_5"></span>
+                                </button>
+                                <button class="ctrl-btn" id="btn-play">
+                                    <span class="nf nf-fa-play" id="play-icon"></span>
+                                </button>
+                                <button class="ctrl-btn" id="btn-forward" title="+5s" style="display:none;">
+                                    <span class="nf nf-md-fast_forward_5"></span>
+                                </button>
+                                <div class="volume-control">
+                                    <button class="ctrl-btn" id="btn-volume">
+                                        <span class="nf nf-fa-volume_up" id="volume-icon"></span>
+                                    </button>
+                                    <input type="range" class="volume-slider" id="volume-slider"
+                                           min="0" max="1" step="0.01" value="1">
+                                </div>
+                                <span class="time-display" id="time-display">0:00 / 0:00</span>
+                            </div>
+                            <div class="controls-right">
+                                <button class="ctrl-btn" id="btn-pip" title="Picture-in-Picture">
+                                    <span class="nf nf-md-picture_in_picture_bottom_right"></span>
+                                </button>
+                                <button class="ctrl-btn" id="btn-fullscreen" title="Fullscreen">
+                                    <span class="nf nf-md-fullscreen" id="fullscreen-icon"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No Video Placeholder -->
+                    <div class="no-video-placeholder" id="no-video-placeholder">
+                        <span class="nf nf-md-movie_open_outline placeholder-icon"></span>
+                        <p data-i18n="player.no_video">Add a video to start watching</p>
+                    </div>
+                </div>
+
+                <!-- Paused By Indicator -->
+                <div class="paused-indicator hidden" id="paused-indicator"></div>
+            </div>
+
+            <!-- RIGHT: SIDEBAR -->
+            <div class="sidebar" id="sidebar">
+                <!-- Sidebar Tabs -->
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-tab="playlist">
+                        <span class="nf nf-md-playlist_play"></span>
+                        <span data-i18n="sidebar.playlist">Playlist</span>
+                    </button>
+                    <button class="sidebar-tab" data-tab="chat">
+                        <span class="nf nf-md-chat"></span>
+                        <span data-i18n="sidebar.chat">Chat</span>
+                        <span class="chat-badge hidden" id="chat-badge">0</span>
+                    </button>
+                    <button class="sidebar-tab" data-tab="voting">
+                        <span class="nf nf-md-vote"></span>
+                        <span data-i18n="sidebar.voting">Vote</span>
+                    </button>
+                </div>
+
+                <!-- PLAYLIST TAB -->
+                <div class="sidebar-panel active" data-panel="playlist">
+                    <div class="panel-content">
+                        <div class="playlist-items" id="playlist-items">
+                            <div class="playlist-empty" data-i18n="playlist.empty">
+                                Playlist is empty
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="add-video-btn" id="add-video-btn">
+                            <span class="nf nf-fa-plus"></span>
+                            <span data-i18n="playlist.add">Add Video</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CHAT TAB -->
+                <div class="sidebar-panel" data-panel="chat">
+                    <div class="panel-content">
+                        <div class="chat-messages" id="chat-messages"></div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="chat-input-container">
+                            <input type="text" class="chat-input" id="chat-input"
+                                   data-i18n-placeholder="chat.placeholder"
+                                   placeholder="Type a message..." maxlength="500"
+                                   autocomplete="off" spellcheck="false">
+                            <button class="chat-send-btn" id="chat-send-btn">
+                                <span class="nf nf-md-send"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VOTING TAB -->
+                <div class="sidebar-panel" data-panel="voting">
+                    <div class="panel-content">
+                        <div class="voting-content" id="voting-content">
+                            <!-- Active vote or vote buttons -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADD VIDEO MODAL -->
+        <div class="modal hidden" id="add-video-modal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="modal.add_video">Add Video</h3>
+                    <button class="modal-close" id="modal-close">
+                        <span class="nf nf-md-close"></span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-tabs">
+                        <button class="modal-tab active" data-mtab="url" data-i18n="modal.by_url">By URL</button>
+                        <button class="modal-tab" data-mtab="file" data-i18n="modal.by_file">Local File</button>
+                    </div>
+
+                    <div class="modal-tab-panel active" data-mpanel="url">
+                        <input type="text" class="modal-input" id="video-url-input"
+                               placeholder="https://youtube.com/watch?v=..." autocomplete="off">
+                        <button class="modal-submit" id="url-submit-btn" data-i18n="modal.download">Download</button>
+                    </div>
+
+                    <div class="modal-tab-panel" data-mpanel="file">
+                        <div class="drop-zone" id="drop-zone">
+                            <span class="nf nf-md-file_video_outline drop-icon"></span>
+                            <p data-i18n="modal.drop_hint">Drag & drop a video file here</p>
+                            <p data-i18n="modal.or">or</p>
+                            <button class="modal-submit" id="file-browse-btn" data-i18n="modal.browse">Browse</button>
+                            <input type="file" id="file-input" accept="video/*" class="hidden">
+                        </div>
+                    </div>
+
+                    <!-- Download Progress -->
+                    <div class="download-progress hidden" id="download-progress">
+                        <div class="download-title" id="download-title"></div>
+                        <div class="download-bar-container">
+                            <div class="download-bar" id="download-bar"></div>
+                        </div>
+                        <div class="download-info">
+                            <span id="download-percent">0%</span>
+                            <span id="download-speed"></span>
+                            <span id="download-eta"></span>
+                        </div>
+                        <div class="download-status" id="download-status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS MODAL -->
+        <div class="modal hidden" id="settings-modal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content settings-modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="settings.title">Settings</h3>
+                    <button class="modal-close" id="settings-close">
+                        <span class="nf nf-md-close"></span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label data-i18n="settings.language">Language</label>
+                        <select id="setting-lang" class="setting-select">
+                            <option value="en">English</option>
+                            <option value="ru">Русский</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label data-i18n="settings.theme">Theme</label>
+                        <select id="setting-theme" class="setting-select">
+                            <option value="catppuccin-mocha">Catppuccin Mocha</option>
+                            <option value="catppuccin-macchiato">Catppuccin Macchiato</option>
+                            <option value="catppuccin-frappe">Catppuccin Frappé</option>
+                            <option value="catppuccin-latte">Catppuccin Latte</option>
+                            <option value="tokyo-night">Tokyo Night</option>
+                            <option value="gruvbox-dark">Gruvbox Dark</option>
+                            <option value="nord">Nord</option>
+                            <option value="rose-pine">Rosé Pine</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label data-i18n="settings.accent">Accent Color</label>
+                        <div class="accent-palette" id="accent-palette"></div>
+                    </div>
+                    <div class="setting-group">
+                        <label data-i18n="settings.nickname">Nickname</label>
+                        <input type="text" class="setting-input" id="setting-nickname" maxlength="20">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="notifications-container" id="notifications-container"></div>
+
+        <!-- MOBILE SIDEBAR TOGGLE -->
+        <button class="mobile-sidebar-toggle hidden" id="mobile-sidebar-toggle">
+            <span class="nf nf-md-menu"></span>
+        </button>
+
+    </div>
+
+    <script src="/static/js/vendor/socket.io.min.js"></script>
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/settings.js"></script>
+    <script src="/static/js/notifications.js"></script>
+    <script src="/static/js/socket.js"></script>
+    <script src="/static/js/player.js"></script>
+    <script src="/static/js/playlist.js"></script>
+    <script src="/static/js/chat.js"></script>
+    <script src="/static/js/voting.js"></script>
+    <script src="/static/js/upload.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
